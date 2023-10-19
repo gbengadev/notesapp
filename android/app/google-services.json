@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "376697453835",
+    "project_id": "gman-demo-app",
+    "storage_bucket": "gman-demo-app.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:376697453835:android:7fef25fb67dec004f2360e",
+        "android_client_info": {
+          "package_name": "com.example.flutterdemoapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCXyKn4uHAa6l3f6odRgMSqleoR7xbc25Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
