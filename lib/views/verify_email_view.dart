@@ -37,7 +37,7 @@ class _VerifyEmailState extends State<VerifyEmail> {
             visible: isVisible,
             child: Column(
               children: [
-                Text(
+                const Text(
                   style: TextStyle(color: Color.fromARGB(255, 1, 71, 3)),
                   ("Email successfully verified!!"),
                 ),

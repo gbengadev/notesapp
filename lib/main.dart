@@ -29,7 +29,7 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    VerifyEmail verifyEmail = new VerifyEmail();
+    VerifyEmail verifyEmail = VerifyEmail();
     return FutureBuilder(
         future: AuthService.firebase().initialize(),
         builder: (context, snapshot) {

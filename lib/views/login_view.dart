@@ -75,13 +75,13 @@ class _LoginViewState extends State<LoginView> {
       // ignore: use_build_context_synchronously
       Navigator.of(context)
           .pushNamedAndRemoveUntil(mainPageRoute, (route) => false);
-    } on WrongCredentialAuthException catch (e) {
+    } on WrongCredentialAuthException catch (_) {
       setState(() {
         isVisible = true;
         errorText = 'Username and password combination is wrong';
       });
-      print("o " + e.code);
-      print(e.message);
+      //  print("o " + e.code);
+      //print(e.message);
     } catch (e) {
       setState(() {
         isVisible = true;
