@@ -1,6 +1,6 @@
 import 'dart:async';
-
 import 'package:flutter/foundation.dart';
+import 'package:flutterdemoapp/constants/sql_statements.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
@@ -57,6 +57,8 @@ class DatabaseNotes {
 
 class DatabaseOpenException implements Exception {}
 
+class DatabaseIsClosedException implements Exception {}
+
 class UnableToGetDirectory implements Exception {}
 
 class CouldNotDeleteUserExcpetion implements Exception {}
@@ -75,13 +77,18 @@ class NotesService {
   Database? _db;
 
   List<DatabaseNotes> _notes = [];
-  final _notesStreamController =
-      StreamController<List<DatabaseNotes>>.broadcast();
+  late final StreamController<List<DatabaseNotes>> _notesStreamController;
 
   Stream<List<DatabaseNotes>> get allNotes => _notesStreamController.stream;
   //Make Note service a singleton class(Can be instantiated only once)
   static final NotesService _shared = NotesService._sharedInstance();
-  NotesService._sharedInstance();
+  NotesService._sharedInstance() {
+    _notesStreamController = StreamController<List<DatabaseNotes>>.broadcast(
+      onListen: () {
+        _notesStreamController.sink.add(_notes);
+      },
+    );
+  }
   factory NotesService() => _shared;
 
   Future<void> _cacheNotes() async {
@@ -90,11 +97,11 @@ class NotesService {
     _notesStreamController.add(_notes);
   }
 
-  Future<DatabaseNotes> updateNotes({
+  Future<DatabaseNotes> updateNote({
     required DatabaseNotes note,
     required String text,
   }) async {
-    final db = getDatabase();
+    final db = _getDatabase();
     //get note
     await getNote(id: note.id);
 
@@ -112,7 +119,7 @@ class NotesService {
   }
 
   Future<Iterable<DatabaseNotes>> getUserNotes() async {
-    final db = getDatabase();
+    final db = _getDatabase();
     final notes = await db.query(
       noteTable,
     );
@@ -120,7 +127,7 @@ class NotesService {
   }
 
   Future<DatabaseNotes> getNote({required int id}) async {
-    final db = getDatabase();
+    final db = _getDatabase();
     final note = await db.query(
       noteTable,
       where: 'id=?',
@@ -141,9 +148,9 @@ class NotesService {
     required DatabaseUser user,
     required String text,
   }) async {
-    final db = getDatabase();
+    final db = _getDatabase();
     final databaseUser = await getUser(email: user.email);
-    if (databaseUser == user) {
+    if (databaseUser != user) {
       throw UserDoesNotExistException();
     }
     final noteId = await db.insert(
@@ -156,6 +163,7 @@ class NotesService {
       userId: user.id,
       text: text,
     );
+    print('Note in createNote service is $note');
     //Cache note
     _notes.add(note);
     _notesStreamController.add(_notes);
@@ -164,11 +172,11 @@ class NotesService {
   }
 
   Future<DatabaseUser> getUser({required String email}) async {
-    final db = getDatabase();
-    final result = await db.query(
-      userTable,
-      where: 'email=${email.toLowerCase()}',
-    );
+    final db = _getDatabase();
+    print('In getUser method--------');
+    final result = await db
+        .query(userTable, where: 'email=?', whereArgs: [email.toLowerCase()]);
+    print('Result is $result');
     if (result.isEmpty) {
       throw UserDoesNotExistException();
     }
@@ -181,18 +189,18 @@ class NotesService {
       return user;
     } on UserDoesNotExistException {
       final createdUser = await createUser(email: email);
+      print("On userdoesnot exist");
       return createdUser;
-    } catch (_) {
+    } catch (e) {
+      print("On exception $e");
       rethrow;
     }
   }
 
   Future<DatabaseUser> createUser({required String email}) async {
-    final db = getDatabase();
-    final result = await db.query(
-      userTable,
-      where: 'email=${email.toLowerCase()}',
-    );
+    final db = _getDatabase();
+    final result = await db
+        .query(userTable, where: 'email=?', whereArgs: [email.toLowerCase()]);
     if (result.isNotEmpty) {
       throw UserAlreadyExistsException();
     }
@@ -203,7 +211,7 @@ class NotesService {
   }
 
   Future<void> deleteNote({required int id}) async {
-    final db = getDatabase();
+    final db = _getDatabase();
     final deletedCount =
         await db.delete(noteTable, where: 'id=?', whereArgs: [id]);
     if (deletedCount == 0) {
@@ -215,17 +223,18 @@ class NotesService {
   }
 
   Future<int> deleteAllNotes() async {
-    final db = getDatabase();
+    final db = _getDatabase();
     final deleteCount = db.delete(noteTable);
     _notes = [];
     _notesStreamController.add(_notes);
     return deleteCount;
   }
 
-  Database getDatabase() {
+  Database _getDatabase() {
     final db = _db;
+    print('db in get database= $db');
     if (db == null) {
-      throw DatabaseOpenException();
+      throw DatabaseIsClosedException();
     } else {
       return db;
     }
@@ -234,27 +243,32 @@ class NotesService {
   Future<void> close() async {
     final db = _db;
     if (db == null) {
-      throw DatabaseOpenException();
+      throw DatabaseIsClosedException();
     } else {
       await db.close();
     }
   }
 
+//Open Database
   Future<void> open() async {
     if (_db != null) {
       throw DatabaseOpenException();
     }
-
     try {
+      //  if (Platform.isAndroid) PathProviderAndroid.registerWith();
+      // if (Platform.isIOS) PathProviderIOS.registerWith();
+      print("In Open method");
       final docsPath = await getApplicationDocumentsDirectory();
       final dbPath = join(docsPath.path, databaseName);
       final db = await openDatabase(dbPath);
+      print("Database is $db and path is $dbPath");
       _db = db;
-      const createUserTable = '';
-      await db.execute(createUserTable);
 
-      const createNoteTable = '';
-      await db.execute(createNoteTable);
+      // const createUserTable = '''$createUserCommand''';
+      await db.execute(createUserCommand);
+
+      // const createNoteTable = '''$createNoteCommand''';
+      await db.execute(createNoteCommand);
       //Cache notes
       await _cacheNotes();
     } on MissingPlatformDirectoryException {

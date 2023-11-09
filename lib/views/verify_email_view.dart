@@ -41,7 +41,8 @@ class _VerifyEmailState extends State<VerifyEmail> {
                   style: TextStyle(color: Color.fromARGB(255, 1, 71, 3)),
                   ("Email successfully verified!!"),
                 ),
-                FilledButton(onPressed: toLoginPage, child: Text('Go to Login'))
+                FilledButton(
+                    onPressed: toLoginPage, child: const Text('Go to Login'))
               ],
             ),
           )

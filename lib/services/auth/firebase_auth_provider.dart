@@ -24,10 +24,11 @@ class FirebaseAuthProvider implements AuthProvider {
         password: password,
       );
       final user = currentUser;
-      if (user != null)
+      if (user != null) {
         return user;
-      else
+      } else {
         throw UserNotLoggedInAuthException();
+      }
       // return user != null ? user : throw UserNotLoggedInAuthException();
     } on FirebaseAuthException catch (e) {
       if (e.code == 'weak-password') {
@@ -53,10 +54,11 @@ class FirebaseAuthProvider implements AuthProvider {
   @override
   Future<void> logOut() async {
     final user = currentUser;
-    if (user != null)
+    if (user != null) {
       await FirebaseAuth.instance.signOut();
-    else
+    } else {
       throw UserNotLoggedInAuthException();
+    }
   }
 
   @override
@@ -70,10 +72,11 @@ class FirebaseAuthProvider implements AuthProvider {
         password: password,
       );
       final user = currentUser;
-      if (user != null)
+      if (user != null) {
         return user;
-      else
+      } else {
         throw UserNotLoggedInAuthException();
+      }
     } on FirebaseAuthException catch (e) {
       switch (e.code) {
         case 'invalid-login-credentials':

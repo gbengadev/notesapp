@@ -3,6 +3,7 @@ import 'package:flutterdemoapp/constants/routes.dart';
 import 'package:flutterdemoapp/services/auth/auth_service.dart';
 import 'package:flutterdemoapp/views/login_view.dart';
 import 'package:flutterdemoapp/views/main_view.dart';
+import 'package:flutterdemoapp/views/notes/new_noteview.dart';
 import 'package:flutterdemoapp/views/register_view.dart';
 import 'package:flutterdemoapp/views/verify_email_view.dart';
 
@@ -20,6 +21,7 @@ void main() {
       registerPageRoute: (context) => const RegisterPage(),
       mainPageRoute: (context) => const MainPage(),
       verifyEmailRoute: (context) => const VerifyEmail(),
+      createViewNoteRoute: (context) => const CreateUpdateNotePage(),
     },
   ));
 }
@@ -29,14 +31,14 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    VerifyEmail verifyEmail = VerifyEmail();
+    const verifyEmail = VerifyEmail();
     return FutureBuilder(
         future: AuthService.firebase().initialize(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
             final user = AuthService.firebase().currentUser;
             if (user != null) {
-              print("Verified status: " + verifyEmail.isVerified().toString());
+              print("Verified status: ${verifyEmail.isVerified()}");
               if (verifyEmail.isVerified()) {
                 return const MainPage();
               } else {

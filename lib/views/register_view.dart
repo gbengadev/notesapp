@@ -53,7 +53,7 @@ class _RegisterPageState extends State<RegisterPage> {
             Visibility(
               visible: isVisible,
               child: Text(
-                style: TextStyle(color: Color.fromARGB(255, 128, 4, 4)),
+                style: const TextStyle(color: Color.fromARGB(255, 128, 4, 4)),
                 (errorText),
               ),
             ),
