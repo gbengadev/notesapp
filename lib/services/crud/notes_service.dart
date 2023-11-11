@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutterdemoapp/constants/sql_statements.dart';
+import 'package:flutterdemoapp/services/auth/auth_exceptions.dart';
+import 'package:flutterdemoapp/utility-methods/extensions.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
@@ -75,11 +77,20 @@ class CouldNotUpdateNoteException implements Exception {}
 
 class NotesService {
   Database? _db;
+  DatabaseUser? _user;
 
   List<DatabaseNotes> _notes = [];
   late final StreamController<List<DatabaseNotes>> _notesStreamController;
 
-  Stream<List<DatabaseNotes>> get allNotes => _notesStreamController.stream;
+  Stream<List<DatabaseNotes>> get allNotes =>
+      _notesStreamController.stream.filter((note) {
+        final currentUser = _user;
+        if (currentUser != null) {
+          return note.userId == currentUser.id;
+        } else {
+          throw UserNotFoundAuthException();
+        }
+      });
   //Make Note service a singleton class(Can be instantiated only once)
   static final NotesService _shared = NotesService._sharedInstance();
   NotesService._sharedInstance() {
@@ -183,13 +194,22 @@ class NotesService {
     return DatabaseUser.fromRow(result.first);
   }
 
-  Future<DatabaseUser> getOrCreateUser({required String email}) async {
+  Future<DatabaseUser> getOrCreateUser({
+    required String email,
+    bool setAsCurrentUser = true,
+  }) async {
     try {
       final user = await getUser(email: email);
+      if (setAsCurrentUser) {
+        _user = user;
+      }
       return user;
     } on UserDoesNotExistException {
-      final createdUser = await createUser(email: email);
       print("On userdoesnot exist");
+      final createdUser = await createUser(email: email);
+      if (setAsCurrentUser) {
+        _user = createdUser;
+      }
       return createdUser;
     } catch (e) {
       print("On exception $e");
@@ -206,7 +226,6 @@ class NotesService {
     }
     final userId =
         await db.insert(userTable, {emailColumn: email.toLowerCase()});
-
     return DatabaseUser(id: userId, email: email);
   }
 

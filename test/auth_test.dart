@@ -78,7 +78,7 @@ class MockAuthProvider implements AuthProvider {
 
   @override
   Future<AuthUser> login({required String email, required String password}) {
-    const user = AuthUser(isEmailVerified: false, email: 'xg@b.com');
+    const user = AuthUser(isEmailVerified: false, email: 'xg@b.com', id: '1');
     _user = user;
     return Future.value(user);
   }

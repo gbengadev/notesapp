@@ -29,7 +29,7 @@ class _CreateUpdateNotePageState extends State<CreateUpdateNotePage> {
     }
     const text = '';
     final currentUser = AuthService.firebase().currentUser!;
-    final email = currentUser.email!;
+    final email = currentUser.email;
     print("Email: $email");
     final databaseUser = await _notesService.getUser(email: email);
     print("Dbuser is: $databaseUser");
@@ -52,7 +52,7 @@ class _CreateUpdateNotePageState extends State<CreateUpdateNotePage> {
     print('Note in save if $_note');
     if (_textEditingController.text.isNotEmpty && note != null) {
       final currentUser = AuthService.firebase().currentUser!;
-      final email = currentUser.email!;
+      final email = currentUser.email;
       await _notesService.getUser(email: email);
       _notesService.updateNote(note: note, text: _textEditingController.text);
     }
@@ -66,7 +66,7 @@ class _CreateUpdateNotePageState extends State<CreateUpdateNotePage> {
       return;
     }
     final currentUser = AuthService.firebase().currentUser!;
-    final email = currentUser.email!;
+    final email = currentUser.email;
     await _notesService.getUser(email: email);
     _notesService.updateNote(note: note, text: text);
   }
