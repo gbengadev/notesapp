@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutterdemoapp/services/auth/auth_service.dart';
 import 'package:flutterdemoapp/services/cloud/cloud_note.dart';
 import 'package:flutterdemoapp/services/cloud/firebase_cloud_service.dart';
+import 'package:flutterdemoapp/services/crud/notes_service.dart';
+import 'package:flutterdemoapp/utility-methods/dialogs.dart';
 import 'package:flutterdemoapp/utility-methods/util.dart';
+import 'package:share_plus/share_plus.dart';
 
 class CreateUpdateNotePage extends StatefulWidget {
   const CreateUpdateNotePage({super.key});
@@ -28,17 +31,10 @@ class _CreateUpdateNotePageState extends State<CreateUpdateNotePage> {
     if (existingNote != null) {
       return existingNote;
     }
-    // const text = '';
     final currentUser = AuthService.firebase().currentUser!;
-    final email = currentUser.email;
-    print("Email: $email");
-    // final databaseUser = await _notesService.getUser(email: email);
-    //print("Dbuser is: $databaseUser");
     final newNote =
         await _notesService.createNewNote(ownerUserId: currentUser.id);
-    // createNote(user: databaseUser, text: text);
     _note = newNote;
-    print('create note is $_note');
     return newNote;
   }
 
@@ -51,11 +47,8 @@ class _CreateUpdateNotePageState extends State<CreateUpdateNotePage> {
 
   void _saveNoteIfNotEmpty() async {
     final note = _note;
-    print('Note in save if $_note');
+    logger.d('Note in save if $_note');
     if (_textEditingController.text.isNotEmpty && note != null) {
-      final currentUser = AuthService.firebase().currentUser!;
-      //final email = currentUser.email;
-      // await _notesService.getUser(email: email);
       await _notesService.updateNote(
           documentId: note.documentId, text: _textEditingController.text);
     }
@@ -68,9 +61,6 @@ class _CreateUpdateNotePageState extends State<CreateUpdateNotePage> {
     if (note == null) {
       return;
     }
-    // final currentUser = AuthService.firebase().currentUser!;
-    // final email = currentUser.email;
-    // await _notesService.getUser(email: email);
     await _notesService.updateNote(documentId: note.documentId, text: text);
   }
 
@@ -103,13 +93,25 @@ class _CreateUpdateNotePageState extends State<CreateUpdateNotePage> {
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: const Text('Create Note'),
+        actions: [
+          IconButton(
+            onPressed: () async {
+              final text = _textEditingController.text;
+              if (text.isEmpty || _note == null) {
+                await showCannotShareEmptyNoteDialog(context);
+              }
+              Share.share(text);
+            },
+            icon: const Icon(Icons.share),
+          )
+        ],
       ),
       body: FutureBuilder(
         future: createGetExistingNote(context),
         builder: (context, snapshot) {
           switch (snapshot.connectionState) {
             case ConnectionState.done:
-              print("Snap shot is $_note");
+              logger.d("Snapshot note is $_note");
               _setupTextControllerListner();
               //Create a multiline textfield that expands with user input
               return TextField(

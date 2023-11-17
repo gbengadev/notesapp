@@ -3,16 +3,19 @@ import 'package:flutter/foundation.dart';
 import 'package:flutterdemoapp/constants/sql_statements.dart';
 import 'package:flutterdemoapp/services/auth/auth_exceptions.dart';
 import 'package:flutterdemoapp/utility-methods/extensions.dart';
+import 'package:logger/logger.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
+
+var logger = Logger();
 
 @immutable
 class DatabaseUser {
   final int id;
   final String email;
 
-  DatabaseUser({required this.id, required this.email});
+  const DatabaseUser({required this.id, required this.email});
 
   DatabaseUser.fromRow(Map<String, Object?> map)
       : id = map[idColumn] as int,
@@ -174,7 +177,7 @@ class NotesService {
       userId: user.id,
       text: text,
     );
-    print('Note in createNote service is $note');
+    logger.d('Note in createNote service is $note');
     //Cache note
     _notes.add(note);
     _notesStreamController.add(_notes);
@@ -184,10 +187,10 @@ class NotesService {
 
   Future<DatabaseUser> getUser({required String email}) async {
     final db = _getDatabase();
-    print('In getUser method--------');
+    logger.d('In getUser method--------');
     final result = await db
         .query(userTable, where: 'email=?', whereArgs: [email.toLowerCase()]);
-    print('Result is $result');
+    logger.d('Result is $result');
     if (result.isEmpty) {
       throw UserDoesNotExistException();
     }
@@ -205,14 +208,14 @@ class NotesService {
       }
       return user;
     } on UserDoesNotExistException {
-      print("On userdoesnot exist");
+      logger.d("On userdoesnot exist");
       final createdUser = await createUser(email: email);
       if (setAsCurrentUser) {
         _user = createdUser;
       }
       return createdUser;
     } catch (e) {
-      print("On exception $e");
+      logger.d("On exception $e");
       rethrow;
     }
   }
@@ -251,7 +254,7 @@ class NotesService {
 
   Database _getDatabase() {
     final db = _db;
-    print('db in get database= $db');
+    logger.d('db in get database= $db');
     if (db == null) {
       throw DatabaseIsClosedException();
     } else {
@@ -276,17 +279,14 @@ class NotesService {
     try {
       //  if (Platform.isAndroid) PathProviderAndroid.registerWith();
       // if (Platform.isIOS) PathProviderIOS.registerWith();
-      print("In Open method");
+      logger.d("In Open db method");
       final docsPath = await getApplicationDocumentsDirectory();
       final dbPath = join(docsPath.path, databaseName);
       final db = await openDatabase(dbPath);
-      print("Database is $db and path is $dbPath");
+      logger.d("Database is $db and path is $dbPath");
       _db = db;
-
-      // const createUserTable = '''$createUserCommand''';
       await db.execute(createUserCommand);
 
-      // const createNoteTable = '''$createNoteCommand''';
       await db.execute(createNoteCommand);
       //Cache notes
       await _cacheNotes();

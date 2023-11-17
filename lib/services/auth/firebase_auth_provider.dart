@@ -1,5 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutterdemoapp/firebase_options.dart';
+import 'package:logger/logger.dart';
 
 import 'auth_user.dart';
 import 'auth_exceptions.dart';
@@ -8,6 +9,8 @@ import 'package:firebase_auth/firebase_auth.dart'
     show FirebaseAuth, FirebaseAuthException;
 
 class FirebaseAuthProvider implements AuthProvider {
+  var logger = Logger();
+
   @override
   Future<void> initialize() async {
     await Firebase.initializeApp(
@@ -67,6 +70,7 @@ class FirebaseAuthProvider implements AuthProvider {
     required String password,
   }) async {
     try {
+      logger.d('In Login section');
       await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: email,
         password: password,
@@ -79,7 +83,8 @@ class FirebaseAuthProvider implements AuthProvider {
       }
     } on FirebaseAuthException catch (e) {
       switch (e.code) {
-        case 'invalid-login-credentials':
+        case 'INVALID_LOGIN_CREDENTIALS':
+          logger.d('In Firebase ${e.code}');
           throw WrongCredentialAuthException();
         default:
           throw GenericAuthException();

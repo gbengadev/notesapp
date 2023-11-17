@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutterdemoapp/constants/routes.dart';
 import 'package:flutterdemoapp/services/auth/auth_service.dart';
+import 'package:flutterdemoapp/services/auth/bloc/auth_bloc.dart';
+import 'package:flutterdemoapp/services/auth/bloc/auth_event.dart';
 import 'package:flutterdemoapp/services/cloud/cloud_note.dart';
 import 'package:flutterdemoapp/services/cloud/firebase_cloud_service.dart';
 import 'package:flutterdemoapp/utility-methods/dialogs.dart';
@@ -48,9 +51,9 @@ class _MainPageState extends State<MainPage> {
               onSelected: (value) async {
                 switch (value) {
                   case MenuAction.logout:
-                    await AuthService.firebase().logOut();
-                    Navigator.of(context).pushNamedAndRemoveUntil(
-                        loginPageRoute, (route) => false);
+                    context.read<AuthBloc>().add(
+                          const AuthEventLogout(),
+                        );
                     break;
                   default:
                 }

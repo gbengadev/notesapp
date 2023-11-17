@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutterdemoapp/constants/routes.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutterdemoapp/services/auth/auth_exceptions.dart';
-import 'package:flutterdemoapp/services/auth/auth_service.dart';
+import 'package:flutterdemoapp/services/auth/bloc/auth_bloc.dart';
+import 'package:flutterdemoapp/services/auth/bloc/auth_event.dart';
+import 'package:flutterdemoapp/services/auth/bloc/auth_state.dart';
+import 'package:flutterdemoapp/services/crud/notes_service.dart';
+import 'package:flutterdemoapp/utility-methods/dialogs.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -13,6 +17,7 @@ class RegisterPage extends StatefulWidget {
 class _RegisterPageState extends State<RegisterPage> {
   late final TextEditingController _email;
   late final TextEditingController _password;
+  CloseDialog? _closedDialogHandle;
   bool isVisible = false;
   String errorText = '';
 
@@ -30,72 +35,97 @@ class _RegisterPageState extends State<RegisterPage> {
     super.dispose();
   }
 
+//
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: const Text('Register'),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            TextFormField(
-              decoration: const InputDecoration(hintText: 'Enter your email'),
-              controller: _email,
-            ),
-            TextFormField(
-              decoration:
-                  const InputDecoration(hintText: 'Enter your password'),
-              controller: _password,
-            ),
-            Visibility(
-              visible: isVisible,
-              child: Text(
-                style: const TextStyle(color: Color.fromARGB(255, 128, 4, 4)),
-                (errorText),
+    return BlocListener<AuthBloc, AuthState>(
+      listener: (context, state) async {
+        if (state is AuthStateRegistering) {
+          logger.d('register state ${state.isLoading}');
+          final closeDialog = _closedDialogHandle;
+          if (!state.isLoading && closeDialog != null) {
+            closeDialog();
+            _closedDialogHandle = null;
+          } else if (state.isLoading && closeDialog == null) {
+            _closedDialogHandle = showLoadingDialog(
+              context: context,
+              text: 'Loading...',
+            );
+          }
+          if (state.exception is WeakPasswordException) {
+            setState(() {
+              isVisible = true;
+              errorText = 'Please enter a password of at least 8 characters';
+            });
+          } else if (state.exception is EmailAlreadyInUseAuthException) {
+            setState(() {
+              isVisible = true;
+              errorText = 'Email is already in use';
+            });
+          } else if (state.exception is GenericAuthException) {
+            setState(() {
+              isVisible = true;
+              errorText = 'Registration Failed. Please try again.';
+            });
+          } else if (state.exception is InvalidEmailAuthException) {
+            setState(() {
+              isVisible = true;
+              errorText = 'Please enter a valid email address';
+            });
+          }
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+          title: const Text('Register'),
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              TextFormField(
+                decoration: const InputDecoration(hintText: 'Enter your email'),
+                controller: _email,
               ),
-            ),
-            FilledButton(onPressed: onPressed, child: const Text('Register')),
-            OutlinedButton(
-                onPressed: navigateToLoginPage,
-                child: const Text('Go To Login'))
-          ],
+              TextFormField(
+                decoration:
+                    const InputDecoration(hintText: 'Enter your password'),
+                obscureText: true,
+                controller: _password,
+              ),
+              Visibility(
+                visible: isVisible,
+                child: Text(
+                  style: const TextStyle(color: Color.fromARGB(255, 128, 4, 4)),
+                  (errorText),
+                ),
+              ),
+              FilledButton(
+                onPressed: _register,
+                child: const Text('Register'),
+              ),
+              OutlinedButton(
+                  onPressed: navigateToLoginPage,
+                  child: const Text('Go To Login'))
+            ],
+          ),
         ),
       ),
     ); // This trailing comma makes auto-formatting nicer for build methods.
   }
 
-  void onPressed() async {
-    try {
-      final email = _email.text;
-      final password = _password.text;
-      await AuthService.firebase().createUser(email: email, password: password);
-      Navigator.of(context)
-          .pushNamedAndRemoveUntil(verifyEmailRoute, (route) => false);
-    } on WeakPasswordException {
-      setState(() {
-        isVisible = true;
-        errorText = 'Please enter a password of at least 8 characters';
-      });
-    } on EmailAlreadyInUseAuthException {
-      setState(() {
-        isVisible = true;
-        errorText = 'Email is already in use';
-      });
-    } on InvalidEmailAuthException {
-      setState(() {
-        isVisible = true;
-        errorText = 'Please enter a valid email address';
-      });
-    } catch (e) {
-      throw GenericAuthException();
-    }
+  void _register() async {
+    final email = _email.text;
+    final password = _password.text;
+    context.read<AuthBloc>().add(
+          AuthEventRegister(email, password),
+        );
   }
 
   void navigateToLoginPage() {
-    Navigator.of(context)
-        .pushNamedAndRemoveUntil(loginPageRoute, (route) => false);
+    context.read<AuthBloc>().add(
+          const AuthEventLogout(),
+        );
   }
 }
