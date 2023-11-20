@@ -32,3 +32,7 @@ class AuthEventLogout extends AuthEvent {
 class AuthEventShouldRegister extends AuthEvent {
   const AuthEventShouldRegister();
 }
+
+class AuthEventShouldLogin extends AuthEvent {
+  const AuthEventShouldLogin();
+}

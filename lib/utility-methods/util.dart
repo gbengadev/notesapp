@@ -1,11 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutterdemoapp/constants/routes.dart';
-
-//Navigate to login page
-void navigateToLoginPage(BuildContext context) {
-  // return const LoginView();
-  Navigator.of(context).pushNamed(loginPageRoute);
-}
 
 //Parse argument between pages
 extension GetArgument on BuildContext {

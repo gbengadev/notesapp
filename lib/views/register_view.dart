@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutterdemoapp/constants/style.dart';
 import 'package:flutterdemoapp/services/auth/auth_exceptions.dart';
 import 'package:flutterdemoapp/services/auth/bloc/auth_bloc.dart';
 import 'package:flutterdemoapp/services/auth/bloc/auth_event.dart';
 import 'package:flutterdemoapp/services/auth/bloc/auth_state.dart';
-import 'package:flutterdemoapp/services/crud/notes_service.dart';
-import 'package:flutterdemoapp/utility-methods/dialogs.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -17,7 +16,7 @@ class RegisterPage extends StatefulWidget {
 class _RegisterPageState extends State<RegisterPage> {
   late final TextEditingController _email;
   late final TextEditingController _password;
-  CloseDialog? _closedDialogHandle;
+  // CloseDialog? _closedDialogHandle;
   bool isVisible = false;
   String errorText = '';
 
@@ -39,19 +38,8 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   Widget build(BuildContext context) {
     return BlocListener<AuthBloc, AuthState>(
-      listener: (context, state) async {
+      listener: (context, state) {
         if (state is AuthStateRegistering) {
-          logger.d('register state ${state.isLoading}');
-          final closeDialog = _closedDialogHandle;
-          if (!state.isLoading && closeDialog != null) {
-            closeDialog();
-            _closedDialogHandle = null;
-          } else if (state.isLoading && closeDialog == null) {
-            _closedDialogHandle = showLoadingDialog(
-              context: context,
-              text: 'Loading...',
-            );
-          }
           if (state.exception is WeakPasswordException) {
             setState(() {
               isVisible = true;
@@ -80,35 +68,40 @@ class _RegisterPageState extends State<RegisterPage> {
           backgroundColor: Theme.of(context).colorScheme.inversePrimary,
           title: const Text('Register'),
         ),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              TextFormField(
-                decoration: const InputDecoration(hintText: 'Enter your email'),
-                controller: _email,
-              ),
-              TextFormField(
-                decoration:
-                    const InputDecoration(hintText: 'Enter your password'),
-                obscureText: true,
-                controller: _password,
-              ),
-              Visibility(
-                visible: isVisible,
-                child: Text(
-                  style: const TextStyle(color: Color.fromARGB(255, 128, 4, 4)),
-                  (errorText),
+        body: Padding(
+          padding: const EdgeInsets.all(pagePadding),
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                TextFormField(
+                  decoration:
+                      const InputDecoration(hintText: 'Enter your email'),
+                  controller: _email,
                 ),
-              ),
-              FilledButton(
-                onPressed: _register,
-                child: const Text('Register'),
-              ),
-              OutlinedButton(
-                  onPressed: navigateToLoginPage,
-                  child: const Text('Go To Login'))
-            ],
+                TextFormField(
+                  decoration:
+                      const InputDecoration(hintText: 'Enter your password'),
+                  obscureText: true,
+                  controller: _password,
+                ),
+                Visibility(
+                  visible: isVisible,
+                  child: Text(
+                    style:
+                        const TextStyle(color: Color.fromARGB(255, 128, 4, 4)),
+                    (errorText),
+                  ),
+                ),
+                FilledButton(
+                  onPressed: _register,
+                  child: const Text('Register'),
+                ),
+                OutlinedButton(
+                    onPressed: navigateToLoginPage,
+                    child: const Text('Go To Login'))
+              ],
+            ),
           ),
         ),
       ),

@@ -5,6 +5,7 @@ import 'package:flutterdemoapp/services/auth/bloc/auth_bloc.dart';
 import 'package:flutterdemoapp/services/auth/bloc/auth_event.dart';
 import 'package:flutterdemoapp/services/auth/bloc/auth_state.dart';
 import 'package:flutterdemoapp/services/auth/firebase_auth_provider.dart';
+import 'package:flutterdemoapp/utility-methods/loading_screens/loading_screen.dart';
 import 'package:flutterdemoapp/views/login_view.dart';
 import 'package:flutterdemoapp/views/main_view.dart';
 import 'package:flutterdemoapp/views/notes/new_noteview.dart';
@@ -24,7 +25,6 @@ void main() {
       child: const HomePage(),
     ),
     routes: {
-      verifyEmailRoute: (context) => const VerifyEmail(),
       createViewNoteRoute: (context) => const CreateUpdateNotePage(),
     },
   ));
@@ -35,11 +35,19 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    //   const verifyEmail = VerifyEmail();
     //Retrieve authbloc from context
     context.read<AuthBloc>().add(const AuthEventInitialize());
 
-    return BlocBuilder<AuthBloc, AuthState>(builder: (context, state) {
+    return BlocConsumer<AuthBloc, AuthState>(listener: (context, state) {
+      if (state.isLoading) {
+        LoadingScreen().show(
+          context: context,
+          text: state.loadingText ?? 'Please wait a moment',
+        );
+      } else {
+        LoadingScreen().hide();
+      }
+    }, builder: (context, state) {
       if (state is AuthStateLoggedIn) {
         return const MainPage();
       } else if (state is AuthStateVerification) {

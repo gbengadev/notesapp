@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutterdemoapp/constants/style.dart';
 import 'package:flutterdemoapp/services/auth/auth_exceptions.dart';
 import 'package:flutterdemoapp/services/auth/bloc/auth_bloc.dart';
 import 'package:flutterdemoapp/services/auth/bloc/auth_event.dart';
 import 'package:flutterdemoapp/services/auth/bloc/auth_state.dart';
-import 'package:flutterdemoapp/utility-methods/dialogs.dart';
 import 'package:logger/logger.dart';
 
 var logger = Logger();
@@ -19,7 +19,6 @@ class LoginView extends StatefulWidget {
 class _LoginViewState extends State<LoginView> {
   late final TextEditingController _email;
   late final TextEditingController _password;
-  CloseDialog? _closedDialogHandle;
   bool isVisible = false;
   String errorText = '';
 
@@ -42,16 +41,6 @@ class _LoginViewState extends State<LoginView> {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) async {
         if (state is AuthStateLoggedOut) {
-          final closeDialog = _closedDialogHandle;
-          if (!state.isLoading && closeDialog != null) {
-            closeDialog();
-            _closedDialogHandle = null;
-          } else if (state.isLoading && closeDialog == null) {
-            _closedDialogHandle = showLoadingDialog(
-              context: context,
-              text: 'Loading...',
-            );
-          }
           logger.d('Exception is ${state.exception}');
           if (state.exception is UserNotFoundAuthException) {
             setState(() {
@@ -76,32 +65,38 @@ class _LoginViewState extends State<LoginView> {
           backgroundColor: Theme.of(context).colorScheme.inversePrimary,
           title: const Text('Login'),
         ),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              TextFormField(
-                decoration: const InputDecoration(hintText: 'Enter your email'),
-                controller: _email,
-              ),
-              TextFormField(
-                decoration:
-                    const InputDecoration(hintText: 'Enter your password'),
-                obscureText: true,
-                controller: _password,
-              ),
-              Visibility(
-                visible: isVisible,
-                child: Text(
-                  style: const TextStyle(color: Color.fromARGB(255, 128, 4, 4)),
-                  (errorText),
+        body: Padding(
+          padding: const EdgeInsets.all(pagePadding),
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                TextFormField(
+                  decoration:
+                      const InputDecoration(hintText: 'Enter your email'),
+                  controller: _email,
                 ),
-              ),
-              FilledButton(onPressed: onPressed, child: const Text('Sign In')),
-              OutlinedButton(
-                  onPressed: navigateToRegisterPage,
-                  child: const Text('Register an Account'))
-            ],
+                TextFormField(
+                  decoration:
+                      const InputDecoration(hintText: 'Enter your password'),
+                  obscureText: true,
+                  controller: _password,
+                ),
+                Visibility(
+                  visible: isVisible,
+                  child: Text(
+                    style:
+                        const TextStyle(color: Color.fromARGB(255, 128, 4, 4)),
+                    (errorText),
+                  ),
+                ),
+                FilledButton(
+                    onPressed: onPressed, child: const Text('Sign In')),
+                OutlinedButton(
+                    onPressed: navigateToRegisterPage,
+                    child: const Text('Register an Account'))
+              ],
+            ),
           ),
         ),
       ),
