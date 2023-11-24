@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutterdemoapp/constants/style.dart';
+import 'package:flutterdemoapp/extensions/buildcontext/loc.dart';
 import 'package:flutterdemoapp/services/auth/auth_exceptions.dart';
 import 'package:flutterdemoapp/services/auth/bloc/auth_bloc.dart';
 import 'package:flutterdemoapp/services/auth/bloc/auth_event.dart';
@@ -43,22 +44,22 @@ class _RegisterPageState extends State<RegisterPage> {
           if (state.exception is WeakPasswordException) {
             setState(() {
               isVisible = true;
-              errorText = 'Please enter a password of at least 8 characters';
+              errorText = context.loc.register_error_weak_password;
             });
           } else if (state.exception is EmailAlreadyInUseAuthException) {
             setState(() {
               isVisible = true;
-              errorText = 'Email is already in use';
+              errorText = context.loc.register_error_email_already_in_use;
             });
           } else if (state.exception is GenericAuthException) {
             setState(() {
               isVisible = true;
-              errorText = 'Registration Failed. Please try again.';
+              errorText = context.loc.register_error_generic;
             });
           } else if (state.exception is InvalidEmailAuthException) {
             setState(() {
               isVisible = true;
-              errorText = 'Please enter a valid email address';
+              errorText = context.loc.register_error_invalid_email;
             });
           }
         }
@@ -66,41 +67,43 @@ class _RegisterPageState extends State<RegisterPage> {
       child: Scaffold(
         appBar: AppBar(
           backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-          title: const Text('Register'),
+          title: Text(context.loc.register),
         ),
         body: Padding(
           padding: const EdgeInsets.all(pagePadding),
           child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                TextFormField(
-                  decoration:
-                      const InputDecoration(hintText: 'Enter your email'),
-                  controller: _email,
-                ),
-                TextFormField(
-                  decoration:
-                      const InputDecoration(hintText: 'Enter your password'),
-                  obscureText: true,
-                  controller: _password,
-                ),
-                Visibility(
-                  visible: isVisible,
-                  child: Text(
-                    style:
-                        const TextStyle(color: Color.fromARGB(255, 128, 4, 4)),
-                    (errorText),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  TextFormField(
+                    decoration: InputDecoration(
+                        hintText: context.loc.email_text_field_placeholder),
+                    controller: _email,
                   ),
-                ),
-                FilledButton(
-                  onPressed: _register,
-                  child: const Text('Register'),
-                ),
-                OutlinedButton(
-                    onPressed: navigateToLoginPage,
-                    child: const Text('Go To Login'))
-              ],
+                  TextFormField(
+                    decoration: InputDecoration(
+                        hintText: context.loc.password_text_field_placeholder),
+                    obscureText: true,
+                    controller: _password,
+                  ),
+                  Visibility(
+                    visible: isVisible,
+                    child: Text(
+                      style: const TextStyle(
+                          color: Color.fromARGB(255, 128, 4, 4)),
+                      (errorText),
+                    ),
+                  ),
+                  FilledButton(
+                    onPressed: _register,
+                    child: Text(context.loc.register),
+                  ),
+                  OutlinedButton(
+                      onPressed: navigateToLoginPage,
+                      child: Text(context.loc.register_view_already_registered))
+                ],
+              ),
             ),
           ),
         ),
@@ -111,6 +114,19 @@ class _RegisterPageState extends State<RegisterPage> {
   void _register() async {
     final email = _email.text;
     final password = _password.text;
+    if (email.isEmpty) {
+      setState(() {
+        isVisible = true;
+        errorText = 'Please enter you email address';
+      });
+      return;
+    } else if (password.isEmpty) {
+      setState(() {
+        isVisible = true;
+        errorText = 'Please enter you password';
+      });
+      return;
+    }
     context.read<AuthBloc>().add(
           AuthEventRegister(email, password),
         );

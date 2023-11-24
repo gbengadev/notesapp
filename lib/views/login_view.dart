@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutterdemoapp/constants/style.dart';
+import 'package:flutterdemoapp/extensions/buildcontext/loc.dart';
 import 'package:flutterdemoapp/services/auth/auth_exceptions.dart';
 import 'package:flutterdemoapp/services/auth/bloc/auth_bloc.dart';
 import 'package:flutterdemoapp/services/auth/bloc/auth_event.dart';
@@ -41,21 +42,21 @@ class _LoginViewState extends State<LoginView> {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) async {
         if (state is AuthStateLoggedOut) {
-          logger.d('Exception is ${state.exception}');
+          logger.d('Login Exception is ${state.exception}');
           if (state.exception is UserNotFoundAuthException) {
             setState(() {
               isVisible = true;
-              errorText = 'User does not exist';
+              errorText = context.loc.login_error_cannot_find_user;
             });
           } else if (state.exception is WrongCredentialAuthException) {
             setState(() {
               isVisible = true;
-              errorText = 'Username and password combination is wrong';
+              errorText = context.loc.login_error_wrong_credentials;
             });
           } else if (state.exception is GenericAuthException) {
             setState(() {
               isVisible = true;
-              errorText = 'Login failed, Please try again later.';
+              errorText = context.loc.login_error_auth_error;
             });
           }
         }
@@ -63,39 +64,60 @@ class _LoginViewState extends State<LoginView> {
       child: Scaffold(
         appBar: AppBar(
           backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-          title: const Text('Login'),
+          title: Text(context.loc.login),
         ),
         body: Padding(
           padding: const EdgeInsets.all(pagePadding),
           child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                TextFormField(
-                  decoration:
-                      const InputDecoration(hintText: 'Enter your email'),
-                  controller: _email,
-                ),
-                TextFormField(
-                  decoration:
-                      const InputDecoration(hintText: 'Enter your password'),
-                  obscureText: true,
-                  controller: _password,
-                ),
-                Visibility(
-                  visible: isVisible,
-                  child: Text(
-                    style:
-                        const TextStyle(color: Color.fromARGB(255, 128, 4, 4)),
-                    (errorText),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  TextFormField(
+                    decoration: InputDecoration(
+                        hintText: context.loc.email_text_field_placeholder),
+                    controller: _email,
                   ),
-                ),
-                FilledButton(
-                    onPressed: onPressed, child: const Text('Sign In')),
-                OutlinedButton(
-                    onPressed: navigateToRegisterPage,
-                    child: const Text('Register an Account'))
-              ],
+                  TextFormField(
+                    decoration: InputDecoration(
+                        hintText: context.loc.password_text_field_placeholder),
+                    obscureText: true,
+                    controller: _password,
+                  ),
+                  Visibility(
+                    visible: isVisible,
+                    child: Text(
+                      style: const TextStyle(
+                          color: Color.fromARGB(255, 128, 4, 4)),
+                      (errorText),
+                    ),
+                  ),
+                  Row(
+                    children: [
+                      const Spacer(),
+                      Expanded(
+                        child: Center(
+                          child: FilledButton(
+                            onPressed: _login,
+                            child: Text(context.loc.login),
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: Align(
+                          alignment: Alignment.centerRight,
+                          child: TextButton(
+                            onPressed: navigateToRegisterPage,
+                            child: Text(
+                                textAlign: TextAlign.end,
+                                context.loc.login_view_not_registered_yet),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -103,10 +125,25 @@ class _LoginViewState extends State<LoginView> {
     );
   }
 
-  void onPressed() async {
+  void _login() async {
     final email = _email.text;
     final password = _password.text;
-    //try {
+    // Validate email and password fields
+    if (email.isEmpty) {
+      setState(() {
+        isVisible = true;
+        errorText = 'Please enter you email address';
+        logger.d('no email');
+      });
+      return;
+    } else if (password.isEmpty) {
+      setState(() {
+        isVisible = true;
+        errorText = 'Please enter you password';
+        logger.d('no password');
+      });
+      return;
+    }
     //Read authbloc from build context
     context.read<AuthBloc>().add(
           AuthEventLogin(email, password),

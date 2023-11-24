@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutterdemoapp/constants/sql_statements.dart';
 import 'package:flutterdemoapp/services/auth/auth_exceptions.dart';
-import 'package:flutterdemoapp/utility-methods/extensions.dart';
+import 'package:flutterdemoapp/extensions/extensions.dart';
 import 'package:logger/logger.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';

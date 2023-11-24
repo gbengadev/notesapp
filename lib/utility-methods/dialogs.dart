@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutterdemoapp/extensions/buildcontext/loc.dart';
 
 typedef DialogOptionBuilder<T> = Map<String, T?> Function();
 
@@ -41,10 +42,10 @@ Future<void> showErrorDialog(
 ) {
   return showCustomDialog<void>(
     context: context,
-    title: 'An error occured',
+    title: context.loc.generic_error_prompt,
     content: text,
     optionsBuilder: () => {
-      'OK': null,
+      context.loc.ok: null,
     },
   );
 }
@@ -52,11 +53,11 @@ Future<void> showErrorDialog(
 Future<bool> showLogoutDialog(BuildContext context) {
   return showCustomDialog<bool>(
     context: context,
-    title: 'Logout',
-    content: 'Are you sure you want to logout',
+    title: context.loc.logout_button,
+    content: context.loc.logout_dialog_prompt,
     optionsBuilder: () => {
-      'Cancel': false,
-      'Log Out': true,
+      context.loc.cancel: false,
+      context.loc.logout_button: true,
     },
     //return false if the value is null
   ).then((value) => value ?? false);
@@ -65,11 +66,11 @@ Future<bool> showLogoutDialog(BuildContext context) {
 Future<bool> showDeleteDialog(BuildContext context) {
   return showCustomDialog<bool>(
     context: context,
-    title: 'Delete',
-    content: 'Are you sure you want to delete this item',
+    title: context.loc.delete,
+    content: context.loc.delete_note_prompt,
     optionsBuilder: () => {
-      'Cancel': false,
-      'Delete': true,
+      context.loc.cancel: false,
+      context.loc.yes: true,
     },
     //return false if the value is null
   ).then((value) => value ?? false);
@@ -78,10 +79,10 @@ Future<bool> showDeleteDialog(BuildContext context) {
 Future<void> showCannotShareEmptyNoteDialog(BuildContext context) {
   return showCustomDialog(
       context: context,
-      title: 'Share Note',
-      content: 'You cannot share an Empty Note',
+      title: context.loc.sharing,
+      content: context.loc.cannot_share_empty_note_prompt,
       optionsBuilder: () => {
-            'Ok': null,
+            context.loc.ok: null,
           });
 }
 

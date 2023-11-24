@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutterdemoapp/extensions/buildcontext/loc.dart';
 import 'package:flutterdemoapp/services/auth/bloc/auth_bloc.dart';
 import 'package:flutterdemoapp/services/auth/bloc/auth_event.dart';
 import 'package:flutterdemoapp/services/auth/bloc/auth_state.dart';
@@ -30,11 +31,11 @@ class _VerifyEmailState extends State<VerifyEmail> {
       child: Scaffold(
         appBar: AppBar(
           backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-          title: const Text("Verify Email"),
+          title: Text(context.loc.verify_email),
         ),
         body: Column(
           children: [
-            const Text("Please click the button below to verify your email"),
+            Text(context.loc.verify_email_view_prompt),
             TextButton(
                 onPressed: () {
                   setState(() {
@@ -42,18 +43,20 @@ class _VerifyEmailState extends State<VerifyEmail> {
                     isVisible = true;
                   });
                 },
-                child: const Text('Verify Email')),
+                child: Text(context.loc.verify_email)),
             Visibility(
               visible: isVisible,
               child: Column(
                 children: [
-                  const Text(
-                    style: TextStyle(color: Color.fromARGB(255, 1, 71, 3)),
-                    ("Email successfully verified!!"),
+                  Text(
+                    style:
+                        const TextStyle(color: Color.fromARGB(255, 1, 71, 3)),
+                    (context.loc.verify_email_success),
                   ),
                   FilledButton(
-                      onPressed: goToLoginPage,
-                      child: const Text('Go to Login'))
+                    onPressed: goToLoginPage,
+                    child: Text(context.loc.back_to_login),
+                  )
                 ],
               ),
             )

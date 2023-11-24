@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutterdemoapp/constants/routes.dart';
+import 'package:flutterdemoapp/extensions/buildcontext/loc.dart';
 import 'package:flutterdemoapp/services/auth/bloc/auth_bloc.dart';
 import 'package:flutterdemoapp/services/auth/bloc/auth_event.dart';
 import 'package:flutterdemoapp/services/auth/bloc/auth_state.dart';
@@ -11,11 +12,15 @@ import 'package:flutterdemoapp/views/main_view.dart';
 import 'package:flutterdemoapp/views/notes/new_noteview.dart';
 import 'package:flutterdemoapp/views/register_view.dart';
 import 'package:flutterdemoapp/views/verify_email_view.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(MaterialApp(
     title: 'Flutter Demo',
+    supportedLocales: AppLocalizations.supportedLocales,
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    debugShowCheckedModeBanner: false,
     theme: ThemeData(
       colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       useMaterial3: true,
@@ -42,7 +47,7 @@ class HomePage extends StatelessWidget {
       if (state.isLoading) {
         LoadingScreen().show(
           context: context,
-          text: state.loadingText ?? 'Please wait a moment',
+          text: state.loadingText ?? context.loc.loadingPrompt,
         );
       } else {
         LoadingScreen().hide();

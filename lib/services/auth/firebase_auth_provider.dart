@@ -82,9 +82,9 @@ class FirebaseAuthProvider implements AuthProvider {
         throw UserNotLoggedInAuthException();
       }
     } on FirebaseAuthException catch (e) {
+      logger.d("Firebase login exception code is ${e.code}");
       switch (e.code) {
-        case 'INVALID_LOGIN_CREDENTIALS':
-          logger.d('In Firebase ${e.code}');
+        case 'invalid-login-credentials':
           throw WrongCredentialAuthException();
         default:
           throw GenericAuthException();
