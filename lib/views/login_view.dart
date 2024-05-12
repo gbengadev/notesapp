@@ -3,9 +3,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutterdemoapp/constants/style.dart';
 import 'package:flutterdemoapp/extensions/buildcontext/loc.dart';
 import 'package:flutterdemoapp/services/auth/auth_exceptions.dart';
+import 'package:flutterdemoapp/services/auth/auth_provider.dart';
 import 'package:flutterdemoapp/services/auth/bloc/auth_bloc.dart';
 import 'package:flutterdemoapp/services/auth/bloc/auth_event.dart';
 import 'package:flutterdemoapp/services/auth/bloc/auth_state.dart';
+import 'package:flutterdemoapp/services/auth/firebase_auth_provider.dart';
 import 'package:logger/logger.dart';
 
 var logger = Logger();
@@ -98,7 +100,9 @@ class _LoginViewState extends State<LoginView> {
                       Expanded(
                         child: Center(
                           child: FilledButton(
-                            onPressed: _login,
+                            onPressed: () {
+                              _login(FirebaseAuthProvider());
+                            },
                             child: Text(context.loc.login),
                           ),
                         ),
@@ -125,7 +129,7 @@ class _LoginViewState extends State<LoginView> {
     );
   }
 
-  void _login() async {
+  void _login(AuthProvider provider) async {
     final email = _email.text;
     final password = _password.text;
     // Validate email and password fields
@@ -144,13 +148,14 @@ class _LoginViewState extends State<LoginView> {
       });
       return;
     }
-    //Read authbloc from build context
+    //Read authbloc from build context(Login)
     context.read<AuthBloc>().add(
-          AuthEventLogin(email, password),
+          AuthEventLogin(email, password, provider),
         );
   }
 
   void navigateToRegisterPage() {
+    BlocProvider.of<AuthBloc>(context).add(const AuthEventShouldRegister());
     context.read<AuthBloc>().add(
           const AuthEventShouldRegister(),
         );

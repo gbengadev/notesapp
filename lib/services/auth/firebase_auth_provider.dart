@@ -32,7 +32,6 @@ class FirebaseAuthProvider implements AuthProvider {
       } else {
         throw UserNotLoggedInAuthException();
       }
-      // return user != null ? user : throw UserNotLoggedInAuthException();
     } on FirebaseAuthException catch (e) {
       if (e.code == 'weak-password') {
         throw WeakPasswordException();
@@ -84,7 +83,7 @@ class FirebaseAuthProvider implements AuthProvider {
     } on FirebaseAuthException catch (e) {
       logger.d("Firebase login exception code is ${e.code}");
       switch (e.code) {
-        case 'invalid-login-credentials':
+        case 'INVALID_LOGIN_CREDENTIALS':
           throw WrongCredentialAuthException();
         default:
           throw GenericAuthException();

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutterdemoapp/constants/routes.dart';
 import 'package:flutterdemoapp/extensions/buildcontext/loc.dart';
+import 'package:flutterdemoapp/services/auth/auth_provider.dart';
+import 'package:flutterdemoapp/services/auth/auth_service.dart';
 import 'package:flutterdemoapp/services/auth/bloc/auth_bloc.dart';
 import 'package:flutterdemoapp/services/auth/bloc/auth_event.dart';
 import 'package:flutterdemoapp/services/auth/bloc/auth_state.dart';
@@ -15,6 +17,7 @@ import 'package:flutterdemoapp/views/verify_email_view.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 void main() {
+  AuthProvider authProvider = AuthService.firebase().provider;
   WidgetsFlutterBinding.ensureInitialized();
   runApp(MaterialApp(
     title: 'Flutter Demo',
@@ -26,7 +29,8 @@ void main() {
       useMaterial3: true,
     ),
     home: BlocProvider<AuthBloc>(
-      create: (context) => AuthBloc(FirebaseAuthProvider()),
+      // create: (context) =>  AuthBloc(FirebaseAuthProvider()),
+      create: (context) => AuthBloc(authProvider),
       child: const HomePage(),
     ),
     routes: {

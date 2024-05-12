@@ -23,6 +23,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           exception: null, isLoading: true, loadingText: 'Logging in'));
       final email = event.email;
       final password = event.password;
+      final provider = event.provider;
       try {
         final user = await provider.login(
           email: email,
